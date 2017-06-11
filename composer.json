@@ -1,0 +1,15 @@
+{
+    "name": "telmoteixeira/loveportugallikeus",
+    "authors": [
+        {
+            "name": "Telmo Teixeira",
+            "email": "telmo.tt@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "LovePortugalLikeUs\\": "LovePortugalLikeUs"
+        }
+    },
+    "require": {}
+}
