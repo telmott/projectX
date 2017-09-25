@@ -1,15 +1,17 @@
 {
-    "name": "telmoteixeira/loveportugallikeus",
+    "name": "telmoteixeira/projectx",
     "authors": [
         {
             "name": "Telmo Teixeira",
-            "email": "telmo.tt@gmail.com"
+            "email": "hi@telmoteixeira.com"
         }
     ],
     "autoload": {
         "psr-4": {
-            "LovePortugalLikeUs\\": "LovePortugalLikeUs"
+            "ProjectX\\": "ProjectX"
         }
     },
-    "require": {}
+    "require": {
+        "sunra/php-simple-html-dom-parser": "^1.5"
+    }
 }

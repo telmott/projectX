@@ -1,4 +1,4 @@
-var element = React.createElement;
+import React from 'react';
 
 import ActList from './actlist.js';
 import DelDayButton from './deldaybutton.js';
@@ -11,21 +11,43 @@ class DayItem extends React.Component {
             id: this.props.id,
             title: this.props.title,
             content: this.props.content,
-            activities: this.props.activities,
-            selectedAct: this.props.selectedAct
+            availableActs: this.props.availableActs,
+            selectedActs: this.props.selectedActs,
+            notSaved: false
         }
-        this.handleInputChange = this.handleInputChange.bind(this);
         this.handleDaySubmit = this.handleDaySubmit.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.filterSelectedActs = this.filterSelectedActs.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            id: nextProps.id,
-            title: nextProps.title,
-            content: nextProps.content,
-            activities: nextProps.activities,
-            selectedAct: nextProps.selectedAct
-        });
+                availableActs: nextProps.availableActs,
+                selectedActs: nextProps.selectedActs
+        }); 
+    }
+
+    handleDaySubmit(e) {
+        e.preventDefault();
+        this.serverRequest = jQuery.ajax({
+            url: projectxRest.url + 'wp/v2/days/' + this.state.id,
+            method: 'POST',
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader( 'X-WP-Nonce', projectxRest.nonce );
+            },
+            data: {
+                "title":this.state.title,
+                "content":this.state.content,
+                "status":"publish",
+                "parent":this.props.parent
+            }
+        }).done( function(result) {
+                this.setState({
+                    id: result.id,
+                    notSaved: false
+                })
+            }.bind(this)
+        )
     }
 
     handleInputChange(e) {
@@ -34,69 +56,50 @@ class DayItem extends React.Component {
         var name = target.name;
 
         this.setState({
-            [name]: value
+            [name]: value,
+            notSaved: true
         })
     }
 
-    handleDaySubmit(e) {
-        e.preventDefault();
-        this.serverRequest = jQuery.ajax({
-            url: lptlusWpApiSettings.root + 'wp/v2/days/' + this.state.id,
-            method: 'POST',
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader( 'X-WP-Nonce', lptlusWpApiSettings.nonce );
-            },
-            data: {
-                "title":this.state.title,
-                "content":this.state.text,
-                "status":"publish",
-                "parent":this.state.parent
-            }
-        }).done( function(result) {
-                this.setState({
-                    id: result.id
-                })
-            }.bind(this)
-        )
+    filterSelectedActs() {
+
+        // TODO: add day value calculation here...
+        return this.state.selectedActs.filter(act => {
+            return act.dayID == this.state.id;
+        });
+    }
+
+    getSaveButton() {
+        if (this.state.notSaved) {
+            return(<input key={'save' + this.state.id} type="submit" value="Save" className="button button-primary button-small" />);
+        }
     }
 
     render() {
         return(
-            element('div', {key: this.state.id, className: "tour-day-item"}, [
-                element('form', {key: "form" + this.state.id, onSubmit: this.handleDaySubmit}, [
-                    element('label', {key: "label-title" + this.state.id, name: "title"}, [
-                        element('input', {
-                            key: "input-title" + this.state.id,
-                            name: "title",
-                            onChange: this.handleInputChange,
-                            value: this.state.title
-                        }, null)
-                    ], 'Title:'),
-                    element('label', {key: "label-text" + this.state.id}, [
-                        element('textarea', {
-                            key: "input-text" + this.state.id,
-                            name: "text",
-                            onChange: this.handleInputChange,
-                            value: this.state.content
-                        }, null)
-                    ], 'Text:'),
-                    // element(ActList, {key: 'activities-wrapper' + this.state.id, activities: this.state.activities, dayID: this.state.id, selectedAct: this.state.selectedAct}, null),
+            <div key={this.state.id} className="tour-day-item">
+                <form key={"form" + this.state.id} onSubmit={this.handleDaySubmit}>
+                <div key="title-input-wrapper">
+                        <label key={"label-title" + this.state.id} htmlFor="title">Title:</label>
+                        <input key={"input-title" + this.state.id} name="title" onChange={this.handleInputChange} value={this.state.title} className="input-tour-day-item"/>
+                    </div>
+                    <div key="text-input-wrapper">
+                        <label key={"label-text" + this.state.id} htmlFor="content">Text:</label>
+                        <textarea key={"input-text" + this.state.id} name="content" onChange={this.handleInputChange} value={unescape(this.state.content.replace(/<\/?[^>]+(>|$)/g, ""))} className="input-tour-day-item" />
+                    </div>
                     <ActList 
                         key={'activities-wrapper' + this.state.id}
-                        activities={this.state.activities}
-                        selectedAct={this.state.selectedAct}
+                        availableActs={this.state.availableActs}
+                        selectedActs={this.filterSelectedActs()}
                         dayId={this.state.id}
                         handleSelectActivity={this.props.handleSelectActivity}
-                    />,
-                    element('div', {key: 'buttons-wrapper' + this.state.id, className: "form-day-buttons-wrapper"}, [
-                        element('input', {key: 'save' + this.state.id, type: "submit", value: "Save", className: "button button-primary button-small"}, null),
-                        element(DelDayButton, {key: 'del' + this.state.id, itemId: this.state.id, del: this.props.handleDayDelete}, null)
-                    ]),
-                    ,
-                ]),
-                
-                
-            ])
+                    />
+                    <div key={'buttons-wrapper' + this.state.id} className="form-day-buttons-wrapper">
+                        {this.getSaveButton()}
+                        <DelDayButton key={'del' + this.state.id} itemId={this.state.id} del={this.props.handleDayDelete} />
+                    </div>
+                </form>
+            </div>
         );
     }
 }

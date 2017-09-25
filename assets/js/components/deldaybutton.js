@@ -1,4 +1,4 @@
-var element = React.createElement;
+import React from 'react';
 
 class DelDayButton extends React.Component {
     constructor(props) {
@@ -8,7 +8,7 @@ class DelDayButton extends React.Component {
     render() {
         if (this.props.itemId != '') {
             return(
-                element('a', {key: "del-day-button", onClick: this.props.del, className: "button button-secondary button-small", href: "#", id: this.props.itemId}, 'Delete')
+                <a key="del-day-button" id={this.props.itemId} href="#" className="button button-secondary button-small" onClick={this.props.del}>Delete</a>
             )
         }
         return null;

@@ -1,4 +1,4 @@
-var element = React.createElement;
+import React from 'react';
 
 import ActListItem from './actlistitem.js';
 
@@ -6,25 +6,21 @@ class ActList extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            activities: this.props.activities,
-            selectedAct: this.props.selectedAct
+            availableActs: this.props.availableActs,
+            selectedActs: this.props.selectedActs
         };
         this.getActivitiesItemList = this.getActivitiesItemList.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
-            activities: nextProps.activities,
-            selectedAct: nextProps.selectedAct
+            availableActs: nextProps.availableActs,
+            selectedActs: nextProps.selectedActs
         });
     }
 
     getActivitiesItemList() {
-        let daySelectedAct = this.state.selectedAct.filter(act => {
-            return act.dayID == this.props.dayId;
-        });
-
-        let activitiesItemList = daySelectedAct.map(act => {
+        let activitiesItemList = this.state.selectedActs.map(act => {
             return <ActListItem 
                 key={'act-item' + act.act.id}
                 id={act.act.id}
@@ -35,7 +31,7 @@ class ActList extends React.Component {
             />
         });
 
-        activitiesItemList.push(this.state.activities.map(act => {
+        activitiesItemList.push(this.state.availableActs.map(act => {
             return <ActListItem 
                 id={act.id}
                 day={this.props.dayId}
@@ -49,9 +45,12 @@ class ActList extends React.Component {
     }
 
     render() {
-        return(
-            element('ul', {className: "act-list-wrapper"}, this.getActivitiesItemList())
-        );
+        if (this.props.dayId != '') {
+            return(
+                <ul className="act-list-wrapper">{this.getActivitiesItemList()}</ul>   
+            );
+        }
+        return null;
     }
 }
 
